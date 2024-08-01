@@ -5,9 +5,13 @@
 const Datastore = require("nedb");
 const express = require("express");
 const app = express();
+const cmd = require('node-cmd');
+const crypto = require('crypto'); 
+const bodyParser = require('body-parser');
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log("listening at port: 3000"));
 app.use(express.static("public"));
+app.use(bodyParser.json());
 app.use(express.json({ limit: "10mb" }));
 
 //create array to store data
@@ -24,6 +28,32 @@ app.post("/api", (request, response) => {
     longitude: request.body.lon,
   });
 });
+
+     
+
+const onWebhook = (req, res) => {
+  let hmac = crypto.createHmac('sha1', process.env.SECRET);
+  let sig  = `sha1=${hmac.update(JSON.stringify(req.body)).digest('hex')}`;
+
+  if (req.headers['x-github-event'] === 'push' && sig === req.headers['x-hub-signature']) {
+    cmd.run('chmod 777 ./git.sh'); 
+    
+    cmd.get('./git.sh', (err, data) => {  
+      if (data) {
+        console.log(data);
+      }
+      if (err) {
+        console.log(err);
+      }
+    })
+
+    cmd.run('refresh');
+  }
+
+  return res.sendStatus(200);
+}
+
+app.post('/git', onWebhook);
 
 // function preload() {
 //   table = loadTable("Data/age_descending.csv", "csv", "header");

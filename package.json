@@ -10,6 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.19.2",
-    "nedb": "^1.8.0"
+    "nedb": "^1.8.0",
+    "nodecmd": "^1.0.1",
+    "body-parser": "^1.20.2"
   }
 }
